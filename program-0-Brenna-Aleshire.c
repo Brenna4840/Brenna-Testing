@@ -6,7 +6,7 @@
 // command line. The main purpose of this assignment is to
 // check and see whether I can connect to the Codespaces Server.
 // Input: None
-//
+// typey
 // Output: (to the command line) A breif Message
 // //********************************************************
 
