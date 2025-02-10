@@ -160,14 +160,11 @@ int simplifyFormat(int *keyFile, char *textFile, int textLength)
         printf("Memory allocation failed\n");
         return 1; 
     } 
-    printf("Numfile: \n"); 
     for(int i = 0; i < textLength; i++)
     {
         numFile[i] = textFile[i]; //letters to ascii numbers 
         numFile[i] = numFile[i] - 97; //ascii to 0-25 
-        printf("%d ", numFile[i]); 
     }
-    printf("\n \n"); 
 
     multiplyMatrixes(keyFile, numFile, textLength); 
 }
@@ -175,23 +172,32 @@ int simplifyFormat(int *keyFile, char *textFile, int textLength)
 
 int multiplyMatrixes(int *keyFile, int *numFile, int textLength) 
 {
-    int *cipherNum = (int *)malloc((textLength) * sizeof(int)); 
+    int *cipherNum = (int *)calloc((textLength), sizeof(int)); 
     if (cipherNum == NULL) {
         printf("Memory allocation failed\n");
         return 1;
     } 
-    printf("CipherNum: \n"); 
-    for(int i = 0; i < textLength; i++) 
-    {
-        cipherNum[i] = ((keyFile[1] * numFile[i]) + (keyFile[2] * numFile[i+1])) % 26; 
-        cipherNum[i+1] = ((keyFile[3] * numFile[i]) + (keyFile[4] * numFile[i+1])) % 26; 
-        printf("%d ", cipherNum[i]); 
-        printf("%d ", cipherNum[i+1]); 
-        printf("| "); 
-        i = i+1; 
-    }
-    printf("\n \n"); 
 
+    int n = keyFile[0];
+
+    int *block = (int *)malloc(n * sizeof(int));  
+    for(int i = 0; i < textLength; i+= n) //goes through numFile block by block 
+    {
+        for(int j = 0; j < n; j++) //creates a block 
+        {
+            block[j] = numFile[i + j];  
+        } 
+
+        for(int j = 0; j < n; j++) //row of key 
+        {
+           for(int k = 0; k < n; k++) 
+            {
+                int math = (j * n + k + 1); 
+                cipherNum[i + j] += keyFile[math] * block[k]; //stays at the same place even if k changes 
+            }
+            cipherNum[i + j] %= 26; 
+        }
+    }
 
     char *cipherText = (char *)malloc((textLength) * sizeof(char)); 
     if (cipherText == NULL) {
@@ -201,8 +207,8 @@ int multiplyMatrixes(int *keyFile, int *numFile, int textLength)
     printf("Ciphertext: \n"); 
     for(int i = 0; i < textLength; i++)
     {
-        cipherNum[i] = cipherNum[i] + 97; 
-        cipherText[i] = (char)cipherNum[i]; 
+        cipherNum[i] = cipherNum[i] + 97; //0-25 to ascii  
+        cipherText[i] = (char)cipherNum[i]; //ascii number to letter 
         printf("%c", cipherText[i]); 
         if((i+1) % 80 == 0) //if a factor of 80 
         {
