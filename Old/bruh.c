@@ -21,9 +21,9 @@
 #include <string.h>  
 
 int *readKeyFile(char *fileName); 
-char *readTextFile(char *fileName); 
-void simplifyFormat(int *keyFile, char *textFile); 
-void multiplyMatrixes(int *keyFile, char *textFile, int textLength); 
+int readTextFile(int *keyFile, char *fileName); 
+int simplifyFormat(int *keyFile, char *textFile, int textLength); 
+int multiplyMatrixes(int *keyFile, int *numFile, int textLength); 
 
 int main(int argc, char **argv) 
 {
@@ -33,17 +33,13 @@ int main(int argc, char **argv)
         printf("key file broken \n"); 
         return 1; 
     }
-    char *textFile = readTextFile(argv[2]); 
-    if(textFile == NULL)
-    {
-        printf("text file broken \n"); 
-        return 1; 
-    } 
-
-    simplifyFormat(keyFile, textFile);  
-
+    
+    readTextFile(keyFile, argv[2]); 
+    //error check here? 
+    
     return 0; 
 }
+
 
 int *readKeyFile(char *fileName) 
 {
@@ -56,7 +52,7 @@ int *readKeyFile(char *fileName)
     int n; 
     fscanf(file1, "%d", &n);  
     //printf("int n = %d \n", n);   
-    int *keyFile = (int *)malloc((n*n) * sizeof(int) + 1);
+    int *keyFile = (int *)malloc((n*n) * sizeof(int));
     if (keyFile == NULL) {
         printf("Memory allocation failed\n");
         fclose(file1);
@@ -83,19 +79,20 @@ int *readKeyFile(char *fileName)
     return keyFile; 
 }
 
-char *readTextFile(char *fileName) 
+
+int readTextFile(int *keyFile, char *fileName) 
 {
     FILE *file2 = fopen(fileName, "r"); 
     if(file2 == NULL) 
     {
         printf("Could not open file\n"); 
-        return NULL; 
+        return 1; 
     }  
     char *textFile = (char *)malloc((10000) * sizeof(char)); 
     if (textFile == NULL) {
         printf("Memory allocation failed\n");
         fclose(file2);
-        return NULL;
+        return 1;
     }
     int counter = 0; 
     for(int i = 0; i < (10000); i++) 
@@ -109,41 +106,46 @@ char *readTextFile(char *fileName)
     }
     fclose(file2); 
 
-    return textFile; 
+    simplifyFormat(keyFile, textFile, counter); 
 }
 
-void simplifyFormat(int *keyFile, char *textFile) 
-{
+
+int simplifyFormat(int *keyFile, char *textFile, int textLength) 
+{  
     int position = 0; 
-    for(int i = 0; i < 10000; i++) 
+    for(int i = 0; i < textLength; i++) 
     {
         if(((textFile[i] >= 65 && textFile[i] <= 90) || (textFile[i] >= 97 && textFile[i] <= 122))) 
-        // if the ascii is between 65-90 or 97-122 
+        // if the ascii is between 65-90 uppercase or 97-122 lowercase 
         {
-            textFile[position++] = textFile[i]; //essentially skips the numbers and symbols  
+            textFile[position++] = textFile[i]; //essentially skips the numbers and symbols 
         } 
     } 
-    for(int i = position; i < 10000; i++) 
-    {
-        textFile[i] = '\0'; //gets ride of extra characters at the end 
-    }
 
-    for(int i = 0; i < position; i++) 
+    textLength = position; //cause I want to use the var name textLength 
+
+    for(int i = textLength; i < 10000; i++) 
+    {
+        textFile[i] = '\0'; //gets ride of extra characters at the end, idk man 
+    } 
+
+    for(int i = 0; i < textLength; i++) 
     {
         if(textFile[i] >= 65 && textFile[i] <=90) 
         {
             textFile[i] = (textFile[i] + 32); //converts uppercase to lowercase 
         }
     }
-
-    //add x 
-    if(position % keyFile[0] != 0) 
+    
+    int math = textLength % keyFile[0]; 
+    while((math) != 0) //while textLength isn't evenly divisible by the dimentions of the key 
     {
-        //
+        textFile[textLength++] = 'x'; 
+        math = textLength % keyFile[0]; 
     }
 
     printf("Plaintext: \n"); 
-    for(int i = 0; i < 150; i++) 
+    for(int i = 0; i < textLength; i++) 
     {
         printf("%c", textFile[i]); 
         if((i+1) % 80 == 0) //if a factor of 80 
@@ -152,16 +154,64 @@ void simplifyFormat(int *keyFile, char *textFile)
         }
     } 
     printf("\n \n");
+ 
+    int *numFile = (int *)malloc((textLength) * sizeof(int)); 
+    if (numFile == NULL) {
+        printf("Memory allocation failed\n");
+        return 1; 
+    } 
+    printf("Numfile: \n"); 
+    for(int i = 0; i < textLength; i++)
+    {
+        numFile[i] = textFile[i]; //letters to ascii numbers 
+        numFile[i] = numFile[i] - 97; //ascii to 0-25 
+        printf("%d ", numFile[i]); 
+    }
+    printf("\n \n"); 
 
-    multiplyMatrixes(keyFile, textFile, position); 
+    multiplyMatrixes(keyFile, numFile, textLength); 
 }
 
-void multiplyMatrixes(int *keyFile, char *textFile, int textLength) 
+
+int multiplyMatrixes(int *keyFile, int *numFile, int textLength) 
 {
-    // 
+    int *cipherNum = (int *)malloc((textLength) * sizeof(int)); 
+    if (cipherNum == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;
+    } 
+    printf("CipherNum: \n"); 
+    for(int i = 0; i < textLength; i++) 
+    {
+        cipherNum[i] = ((keyFile[1] * numFile[i]) + (keyFile[2] * numFile[i+1])) % 26; 
+        cipherNum[i+1] = ((keyFile[3] * numFile[i]) + (keyFile[4] * numFile[i+1])) % 26; 
+        printf("%d ", cipherNum[i]); 
+        printf("%d ", cipherNum[i+1]); 
+        printf("| "); 
+        i = i+1; 
+    }
+    printf("\n \n"); 
 
+
+    char *cipherText = (char *)malloc((textLength) * sizeof(char)); 
+    if (cipherText == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
     printf("Ciphertext: \n"); 
+    for(int i = 0; i < textLength; i++)
+    {
+        cipherNum[i] = cipherNum[i] + 97; 
+        cipherText[i] = (char)cipherNum[i]; 
+        printf("%c", cipherText[i]); 
+        if((i+1) % 80 == 0) //if a factor of 80 
+        {
+            printf("\n"); 
+        }
+    }
+    printf("\n"); 
 }
+
 
 /*=============================================================================
 | I Brenna Aleshire (br680439) affirm that this program is
