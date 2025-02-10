@@ -20,80 +20,148 @@
 #include <stdlib.h> 
 #include <string.h>  
 
-char *simplifyFormat(char *text); 
+int *readKeyFile(char *fileName); 
+char *readTextFile(char *fileName); 
+void simplifyFormat(int *keyFile, char *textFile); 
+void multiplyMatrixes(int *keyFile, char *textFile, int textLength); 
 
 int main(int argc, char **argv) 
 {
-    for (int i = 0; i < argc; i++) //prints the accepted arguments 
+    int *keyFile = readKeyFile(argv[1]); 
+    if(keyFile == NULL)
     {
-        printf("argument %d: %s\n", i, argv[i]);
+        printf("key file broken \n"); 
+        return 1; 
     }
-    printf("\n"); 
-    
-    // FILE *file1 = fopen(argv[1], "r"); 
-    // if(file1 == NULL) 
-    // {
-    //     printf("Could not open file\n"); 
-    //     return 0; 
-    // } 
-    // int n; 
-    // fscanf(file1, "%d", &n);  
-    // printf("int n = %d \n", n);   
-    // int *keyFile = (int *)malloc((n*n) * sizeof(int));
-    // if (keyFile == NULL) {
-    //     printf("Memory allocation failed\n");
-    //     fclose(file1);
-    //     return 0;
-    // }
-    // keyFile[0] = n; 
-    // for(int i = 1; i < (n*n)+1; i++) 
-    // { 
-    //     fscanf(file1, "%d", &keyFile[i]); 
-    // }
-    // fclose(file1); 
-    // for(int i = 0; i < (n*n)+1; i++) 
-    // {
-    //     printf("KeyFile[%d]: %d\n", i, keyFile[i]); 
-    // } 
-    // printf("\n"); 
+    char *textFile = readTextFile(argv[2]); 
+    if(textFile == NULL)
+    {
+        printf("text file broken \n"); 
+        return 1; 
+    } 
 
+    simplifyFormat(keyFile, textFile);  
 
-    FILE *file2 = fopen(argv[2], "r"); 
+    return 0; 
+}
+
+int *readKeyFile(char *fileName) 
+{
+    FILE *file1 = fopen(fileName, "r"); 
+    if(file1 == NULL) 
+    {
+        printf("Could not open file\n"); 
+        return NULL; 
+    } 
+    int n; 
+    fscanf(file1, "%d", &n);  
+    //printf("int n = %d \n", n);   
+    int *keyFile = (int *)malloc((n*n) * sizeof(int) + 1);
+    if (keyFile == NULL) {
+        printf("Memory allocation failed\n");
+        fclose(file1);
+        return NULL;
+    }
+    keyFile[0] = n; 
+    for(int i = 1; i < (n*n)+1; i++) 
+    { 
+        fscanf(file1, "%d", &keyFile[i]); 
+    }
+    fclose(file1);
+
+    printf("Key matrix: \n"); 
+    for(int i = 1; i < (n*n)+1; i++) 
+    {
+        printf("%4d", keyFile[i]); 
+        if(i % n == 0)
+        {
+            printf("\n"); 
+        }
+    } 
+    printf("\n");  
+
+    return keyFile; 
+}
+
+char *readTextFile(char *fileName) 
+{
+    FILE *file2 = fopen(fileName, "r"); 
     if(file2 == NULL) 
     {
         printf("Could not open file\n"); 
-        return 0; 
+        return NULL; 
     }  
-    char *textFile = (char *)malloc((100) * sizeof(char)); 
+    char *textFile = (char *)malloc((10000) * sizeof(char)); 
     if (textFile == NULL) {
         printf("Memory allocation failed\n");
         fclose(file2);
-        return 0;
+        return NULL;
     }
-    for(int i = 0; i < (100); i++) 
+    int counter = 0; 
+    for(int i = 0; i < (10000); i++) 
     { 
-        int result = fscanf(file2, " %c", &textFile[i]); 
-        // if(result == EOF)
-        // {
-        //     break; 
-        // }
+        int result = fscanf(file2, " %c", &textFile[i]);  
+        if(result == EOF)
+        {
+            break; 
+        }
+        counter++; 
     }
     fclose(file2); 
-    for(int i = 0; i < (sizeof(textFile)); i++) 
-    {
-        printf("TextFile[%d]: %d\n", i, textFile[i]); 
-    } 
-    printf("\n"); 
 
-    return 1; 
+    return textFile; 
 }
 
+void simplifyFormat(int *keyFile, char *textFile) 
+{
+    int position = 0; 
+    for(int i = 0; i < 10000; i++) 
+    {
+        if(((textFile[i] >= 65 && textFile[i] <= 90) || (textFile[i] >= 97 && textFile[i] <= 122))) 
+        // if the ascii is between 65-90 or 97-122 
+        {
+            textFile[position++] = textFile[i]; //essentially skips the numbers and symbols  
+        } 
+    } 
+    for(int i = position; i < 10000; i++) 
+    {
+        textFile[i] = '\0'; //gets ride of extra characters at the end 
+    }
 
-char *simplifyFormat(char *text) 
+    for(int i = 0; i < position; i++) 
+    {
+        if(textFile[i] >= 65 && textFile[i] <=90) 
+        {
+            textFile[i] = (textFile[i] + 32); //converts uppercase to lowercase 
+        }
+    }
+
+    //add x 
+    if(position % keyFile[0] != 0) 
+    {
+        //
+    }
+
+    printf("Plaintext: \n"); 
+    for(int i = 0; i < 150; i++) 
+    {
+        printf("%c", textFile[i]); 
+        if((i+1) % 80 == 0) //if a factor of 80 
+        {
+            printf("\n"); 
+        }
+    } 
+    printf("\n \n");
+
+    multiplyMatrixes(keyFile, textFile, position); 
+}
+
+void multiplyMatrixes(int *keyFile, char *textFile, int textLength) 
 {
     // 
-}
 
+    printf("Ciphertext: \n"); 
+}
 
 /*=============================================================================
 | I Brenna Aleshire (br680439) affirm that this program is

@@ -20,18 +20,13 @@
 #include <stdlib.h> 
 #include <string.h>  
 
-char *simplifyFormat(char *text); 
 int *readKeyFile(char *fileName); 
 char *readTextFile(char *fileName); 
+void simplifyFormat(int *keyFile, char *textFile); 
+void multiplyMatrixes(int *keyFile, char *textFile, int textLength); 
 
 int main(int argc, char **argv) 
 {
-    for (int i = 0; i < argc; i++) //prints the accepted arguments 
-    {
-        printf("argument %d: %s\n", i, argv[i]);
-    }
-    printf("\n"); 
-
     int *keyFile = readKeyFile(argv[1]); 
     if(keyFile == NULL)
     {
@@ -43,41 +38,13 @@ int main(int argc, char **argv)
     {
         printf("text file broken \n"); 
         return 1; 
-    }
+    } 
 
-    textFile = simplifyFormat(textFile); 
-    // for(int i = 0; i < 75; i++) 
-    // {
-    //     printf("TextFile[%d]: %c\n", i, textFile[i]); 
-    // } 
-    // printf("\n"); 
+    simplifyFormat(keyFile, textFile);  
 
     return 0; 
 }
 
-
-char *simplifyFormat(char *text) 
-{
-    int position = 0; 
-    for(int i = 0; i < 10000; i++) 
-    {
-        if(((text[i] >= 65 && text[i] <= 90) || (text[i] >= 97 && text[i] <= 122))) 
-        // if the ascii is between 65-90 or 97-122 
-        {
-            text[position++] = text[i]; //moves up all the other characters 
-        } 
-    } 
-
-    for(int i = 0; i < 10000; i++)
-    {
-        if((text[i] >= 65 && text[i] <=90)) 
-        {
-            text[i] = (text[i] + 32); //converts uppercase to lowercase 
-        }
-    }
-
-    return text;   
-}
 
 int *readKeyFile(char *fileName) 
 {
@@ -89,7 +56,7 @@ int *readKeyFile(char *fileName)
     } 
     int n; 
     fscanf(file1, "%d", &n);  
-    printf("int n = %d \n", n);   
+    //printf("int n = %d \n", n);   
     int *keyFile = (int *)malloc((n*n) * sizeof(int) + 1);
     if (keyFile == NULL) {
         printf("Memory allocation failed\n");
@@ -101,15 +68,22 @@ int *readKeyFile(char *fileName)
     { 
         fscanf(file1, "%d", &keyFile[i]); 
     }
-    fclose(file1); 
-    for(int i = 0; i < (n*n)+1; i++) 
+    fclose(file1);
+
+    printf("Key matrix: \n"); 
+    for(int i = 1; i < (n*n)+1; i++) 
     {
-        printf("KeyFile[%d]: %d\n", i, keyFile[i]); 
+        printf("%4d", keyFile[i]); 
+        if(i % n == 0)
+        {
+            printf("\n"); 
+        }
     } 
     printf("\n");  
 
     return keyFile; 
 }
+
 
 char *readTextFile(char *fileName) 
 {
@@ -136,14 +110,63 @@ char *readTextFile(char *fileName)
         counter++; 
     }
     fclose(file2); 
-    // for(int i = 0; i < counter; i++) 
-    // {
-    //     printf("TextFile[%d]: %c\n", i, textFile[i]); 
-    // } 
-    // printf("\n"); 
 
-    return textFile;  
+    return textFile; 
 }
+
+
+void simplifyFormat(int *keyFile, char *textFile) 
+{
+    int position = 0; 
+    for(int i = 0; i < 10000; i++) 
+    {
+        if(((textFile[i] >= 65 && textFile[i] <= 90) || (textFile[i] >= 97 && textFile[i] <= 122))) 
+        // if the ascii is between 65-90 or 97-122 
+        {
+            textFile[position++] = textFile[i]; //essentially skips the numbers and symbols  
+        } 
+    } 
+    for(int i = position; i < 10000; i++) 
+    {
+        textFile[i] = '\0'; //gets ride of extra characters at the end 
+    }
+
+    for(int i = 0; i < position; i++) 
+    {
+        if(textFile[i] >= 65 && textFile[i] <=90) 
+        {
+            textFile[i] = (textFile[i] + 32); //converts uppercase to lowercase 
+        }
+    }
+
+    //add x 
+    if(position % keyFile[0] != 0) 
+    {
+        //
+    }
+
+    printf("Plaintext: \n"); 
+    for(int i = 0; i < 150; i++) 
+    {
+        printf("%c", textFile[i]); 
+        if((i+1) % 80 == 0) //if a factor of 80 
+        {
+            printf("\n"); 
+        }
+    } 
+    printf("\n \n");
+
+    multiplyMatrixes(keyFile, textFile, position); 
+}
+
+
+void multiplyMatrixes(int *keyFile, char *textFile, int textLength) 
+{
+    // 
+
+    printf("Ciphertext: \n"); 
+}
+
 
 /*=============================================================================
 | I Brenna Aleshire (br680439) affirm that this program is
