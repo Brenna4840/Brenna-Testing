@@ -21,6 +21,8 @@
 #include <string.h>  
 
 char *simplifyFormat(char *text); 
+int *readKeyFile(char *fileName); 
+char *readTextFile(char *fileName); 
 
 int main(int argc, char **argv) 
 {
@@ -29,21 +31,70 @@ int main(int argc, char **argv)
         printf("argument %d: %s\n", i, argv[i]);
     }
     printf("\n"); 
-    
-    FILE *file1 = fopen(argv[1], "r"); 
+
+    int *keyFile = readKeyFile(argv[1]); 
+    if(keyFile == NULL)
+    {
+        printf("key file broken \n"); 
+        return 1; 
+    }
+    char *textFile = readTextFile(argv[2]); 
+    if(textFile == NULL)
+    {
+        printf("text file broken \n"); 
+        return 1; 
+    }
+
+    textFile = simplifyFormat(textFile); 
+    // for(int i = 0; i < 75; i++) 
+    // {
+    //     printf("TextFile[%d]: %c\n", i, textFile[i]); 
+    // } 
+    // printf("\n"); 
+
+    return 0; 
+}
+
+
+char *simplifyFormat(char *text) 
+{
+    int position = 0; 
+    for(int i = 0; i < 10000; i++) 
+    {
+        if(((text[i] >= 65 && text[i] <= 90) || (text[i] >= 97 && text[i] <= 122))) 
+        // if the ascii is between 65-90 or 97-122 
+        {
+            text[position++] = text[i]; //moves up all the other characters 
+        } 
+    } 
+
+    for(int i = 0; i < 10000; i++)
+    {
+        if((text[i] >= 65 && text[i] <=90)) 
+        {
+            text[i] = (text[i] + 32); //converts uppercase to lowercase 
+        }
+    }
+
+    return text;   
+}
+
+int *readKeyFile(char *fileName) 
+{
+    FILE *file1 = fopen(fileName, "r"); 
     if(file1 == NULL) 
     {
         printf("Could not open file\n"); 
-        return 0; 
+        return NULL; 
     } 
     int n; 
     fscanf(file1, "%d", &n);  
     printf("int n = %d \n", n);   
-    int *keyFile = (int *)malloc((n*n) * sizeof(int));
+    int *keyFile = (int *)malloc((n*n) * sizeof(int) + 1);
     if (keyFile == NULL) {
         printf("Memory allocation failed\n");
         fclose(file1);
-        return 0;
+        return NULL;
     }
     keyFile[0] = n; 
     for(int i = 1; i < (n*n)+1; i++) 
@@ -55,23 +106,27 @@ int main(int argc, char **argv)
     {
         printf("KeyFile[%d]: %d\n", i, keyFile[i]); 
     } 
-    printf("\n"); 
-    
+    printf("\n");  
 
-    FILE *file2 = fopen(argv[2], "r"); 
+    return keyFile; 
+}
+
+char *readTextFile(char *fileName) 
+{
+    FILE *file2 = fopen(fileName, "r"); 
     if(file2 == NULL) 
     {
         printf("Could not open file\n"); 
-        return 0; 
+        return NULL; 
     }  
-    char *textFile = (char *)malloc((100) * sizeof(char)); 
+    char *textFile = (char *)malloc((10000) * sizeof(char)); 
     if (textFile == NULL) {
         printf("Memory allocation failed\n");
         fclose(file2);
-        return 0;
+        return NULL;
     }
     int counter = 0; 
-    for(int i = 0; i < (100); i++) 
+    for(int i = 0; i < (10000); i++) 
     { 
         int result = fscanf(file2, " %c", &textFile[i]);  
         if(result == EOF)
@@ -81,21 +136,14 @@ int main(int argc, char **argv)
         counter++; 
     }
     fclose(file2); 
-    for(int i = 0; i < counter; i++) 
-    {
-        printf("TextFile[%d]: %c\n", i, textFile[i]); 
-    } 
-    printf("\n"); 
+    // for(int i = 0; i < counter; i++) 
+    // {
+    //     printf("TextFile[%d]: %c\n", i, textFile[i]); 
+    // } 
+    // printf("\n"); 
 
-    return 1; 
+    return textFile;  
 }
-
-
-char *simplifyFormat(char *text) 
-{
-    // 
-}
-
 
 /*=============================================================================
 | I Brenna Aleshire (br680439) affirm that this program is
