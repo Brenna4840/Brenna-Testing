@@ -22,8 +22,8 @@
 
 int *readKeyFile(char *fileName); 
 int readTextFile(int *keyFile, char *fileName); 
-void simplifyFormat(int *keyFile, char *textFile, int textLength); 
-void multiplyMatrixes(int *keyFile, char *textFile, int textLength); 
+int simplifyFormat(int *keyFile, char *textFile, int textLength); 
+int multiplyMatrixes(int *keyFile, int *numFile, int textLength); 
 
 int main(int argc, char **argv) 
 {
@@ -110,7 +110,7 @@ int readTextFile(int *keyFile, char *fileName)
 }
 
 
-void simplifyFormat(int *keyFile, char *textFile, int textLength) 
+int simplifyFormat(int *keyFile, char *textFile, int textLength) 
 {  
     int position = 0; 
     for(int i = 0; i < textLength; i++) 
@@ -154,14 +154,31 @@ void simplifyFormat(int *keyFile, char *textFile, int textLength)
         }
     } 
     printf("\n \n");
+ 
+    int *numFile = (int *)malloc((textLength) * sizeof(int)); 
+    if (numFile == NULL) {
+        printf("Memory allocation failed\n");
+        return 1; 
+    } 
+    for(int i = 0; i < textLength; i++)
+    {
+        numFile[i] = textFile[i]; //letters to numbers 
+    }
 
-    multiplyMatrixes(keyFile, textFile, textLength); 
+    multiplyMatrixes(keyFile, numFile, textLength); 
 }
 
 
-void multiplyMatrixes(int *keyFile, char *textFile, int textLength) 
+
+int multiplyMatrixes(int *keyFile, int *numFile, int textLength) 
 {
-    // 
+    char *cipherText = (char *)malloc((textLength) * sizeof(char)); 
+    if (cipherText == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;
+    } 
+
+    
 
     printf("Ciphertext: \n"); 
 }
