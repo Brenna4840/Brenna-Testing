@@ -24,6 +24,14 @@ void compute8(char *testFile, int checksumSize, int textLength);
 void compute16(char *testFile, int checksumSize, int textLength); 
 void compute32(char *testFile, int checksumSize, int textLength); 
 
+//********************************************************
+// int main(int argc, char **argv)  
+//
+// Purpose:          reads the file, prints it, and calls other compute functions     
+// Output:           prints file's contents in lines of 80 characters  
+// Argunments:       argc is the number of command line arguments, and argv is an array of the argunments   
+// Postcondition:    1 if an error happens, else 0        
+//********************************************************
 int main(int argc, char **argv) 
 {
     FILE *file = fopen(argv[1], "r"); 
@@ -68,6 +76,7 @@ int main(int argc, char **argv)
     if(checksumSize != 8 && checksumSize != 16 && checksumSize != 32) //error check 
     {
         fprintf(stderr, "Valid checksum sizes are 8, 16, or 32\n"); 
+        return 1; 
     }  
     else if(checksumSize == 8) 
     {
@@ -87,6 +96,16 @@ int main(int argc, char **argv)
     return 0; 
 } 
 
+
+//********************************************************
+// void compute8(char *testFile, int checksumSize, int textLength) 
+//
+// Purpose:          computes the 8 bit checksum    
+// Output:           prints the checksum size 8, the checksum, and the length of the input 
+// Argunments:       char *testFile contains the input information, int checksumSize is 8  
+//                   and int textLength is the length of the input   
+// Postcondition:    returns nothing      
+//********************************************************
 void compute8(char *testFile, int checksumSize, int textLength) 
 {
     unsigned int checksum = 0; 
@@ -103,6 +122,16 @@ void compute8(char *testFile, int checksumSize, int textLength)
     printf("%d bit checksum is %8x for all %d chars\n", checksumSize, (unsigned char)checksum, textLength); 
 }
 
+
+//********************************************************
+// void compute16(char *testFile, int checksumSize, int textLength) 
+//
+// Purpose:          computes the 16 bit checksum    
+// Output:           prints the checksum size 16, the checksum, and the length of the input 
+// Argunments:       char *testFile contains the input information, int checksumSize is 16  
+//                   and int textLength is the length of the input   
+// Postcondition:    returns nothing      
+//********************************************************
 void compute16(char *testFile, int checksumSize, int textLength) 
 {
     unsigned short checksum = 0; 
@@ -120,13 +149,22 @@ void compute16(char *testFile, int checksumSize, int textLength)
 
     if(textLength % 2 != 0) 
     {
-        checksum += 88; //aka X 
-        textLength++; 
+        checksum += 88; //aka X  
     }
 
     printf("%d bit checksum is %8x for all %d chars\n", checksumSize, checksum, textLength); 
 } 
 
+
+//********************************************************
+// void compute32(char *testFile, int checksumSize, int textLength) 
+//
+// Purpose:          computes the 32 bit checksum    
+// Output:           prints the checksum size, the checksum, and the length of the input 
+// Argunments:       char *testFile contains the input information, int checksumSize is 32 
+//                   and int textLength is the length of the input   
+// Postcondition:    returns nothing      
+//********************************************************
 void compute32(char *testFile, int checksumSize, int textLength) 
 {
     unsigned int checksum = 0;
@@ -135,23 +173,26 @@ void compute32(char *testFile, int checksumSize, int textLength)
     padding = padding % 4; //makes sure it doesn't pad if already 4 
     for (int i = textLength; i < textLength + padding; i++) 
     {
-        testFile[i] = 0x58; //aka X 
+        testFile[i] = 0x58;  
     }
     testFile[textLength + padding] = '\0'; 
-    textLength = textLength + padding; //updates textLength 
+    int newLength = textLength + padding; 
 
-    for (int i = 0; i < textLength; i += 4) //moves by 4 
+    for (int i = 0; i < newLength; i += 4) //moves by 4 
     {
         unsigned int word = 0; 
-        for (int j = 0; j < 4 && i + j < textLength; j++) 
+        for (int j = 0; j < 4 && i + j < newLength; j++) 
         {
-            word |= (unsigned char)testFile[i + j] << (8 * (3 - j)); 
-        }
+            unsigned char temp = (unsigned char)testFile[i + j]; 
+            int shiftAmount = 8 * (3 - j); 
+            unsigned char shiftedTemp = temp << shiftAmount; 
+            word |= shiftedTemp;      
+        } 
         checksum += word; 
-    }
+    } 
     
     printf("%d bit checksum is %8x for all %d chars \n", checksumSize, checksum, textLength); 
-}
+} 
 
 
 /*=============================================================================
