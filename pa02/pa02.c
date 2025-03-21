@@ -173,7 +173,7 @@ void compute32(char *testFile, int checksumSize, int textLength)
     padding = padding % 4; //makes sure it doesn't pad if already 4 
     for (int i = textLength; i < textLength + padding; i++) 
     {
-        testFile[i] = 0x58;  
+        testFile[i] = 0x58; //aka X 
     }
     testFile[textLength + padding] = '\0'; 
     int newLength = textLength + padding; 
