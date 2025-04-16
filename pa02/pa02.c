@@ -58,14 +58,15 @@ int main(int argc, char **argv)
         counter++; 
     } 
 
-    for(int i = 0; i < counter; i++) //formatting the lines 
+    printf("\n"); 
+    for (int i = 0; i < counter; i++) 
     {
-        printf("%c", testFile[i]); 
-        if((i+1) % 80 == 0) 
+        printf("%c", testFile[i]);
+        if ((i + 1) % 80 == 0 && i != counter - 1) 
         {
-            printf("\n"); 
+           printf("\n");
         }
-    } 
+    }
 
     int checksumSize = 0; 
     for (int i = 0; argv[2][i] != '\0'; i++) 
@@ -80,6 +81,7 @@ int main(int argc, char **argv)
     }  
     else if(checksumSize == 8) 
     {
+        printf("\n"); 
         compute8(testFile, checksumSize, counter); 
     }
     else if(checksumSize == 16)
@@ -119,7 +121,7 @@ void compute8(char *testFile, int checksumSize, int textLength)
         checksum = checksum + (num1 + num2);             
     } 
     
-    printf("%d bit checksum is %8x for all %d chars\n", checksumSize, (unsigned char)checksum, textLength); 
+    printf(" %d bit checksum is %8x for all %4d chars\n", checksumSize, (unsigned char)checksum, textLength); 
 }
 
 
@@ -150,7 +152,10 @@ void compute16(char *testFile, int checksumSize, int textLength)
     if(textLength % 2 != 0) 
     {
         checksum += 88; //aka X  
+        printf("X"); 
+        textLength++; 
     }
+    printf("\n"); 
 
     printf("%d bit checksum is %8x for all %d chars\n", checksumSize, checksum, textLength); 
 } 
@@ -174,19 +179,18 @@ void compute32(char *testFile, int checksumSize, int textLength)
     for (int i = textLength; i < textLength + padding; i++) 
     {
         testFile[i] = 0x58; //aka X 
-    }
+        printf("X");  
+    } 
     testFile[textLength + padding] = '\0'; 
-    int newLength = textLength + padding; 
+    printf("\n"); 
+    textLength = textLength + padding; 
 
-    for (int i = 0; i < newLength; i += 4) //moves by 4 
+    for (int i = 0; i < textLength; i += 4) //moves by 4 
     {
         unsigned int word = 0; 
-        for (int j = 0; j < 4 && i + j < newLength; j++) 
+        for (int j = 0; j < 4 && (i + j) < textLength; j++) 
         {
-            unsigned char temp = (unsigned char)testFile[i + j]; 
-            int shiftAmount = 8 * (3 - j); 
-            unsigned char shiftedTemp = temp << shiftAmount; 
-            word |= shiftedTemp;      
+            word |= (unsigned char)testFile[i + j] << (8 * (3 - j)); 
         } 
         checksum += word; 
     } 
